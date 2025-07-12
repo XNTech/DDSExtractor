@@ -8,7 +8,7 @@ Module DdsExtractor
     Private ReadOnly POF_MARKER As String = "POF"
 
     Sub Main()
-        Console.WriteLine("DDS 文件提取工具")
+        Console.WriteLine("DDS 文件提取工具 by ChilorXN.")
         Console.WriteLine("请拖放要处理的 .afb 或 .svo 文件到窗口，或输入文件路径(支持多个文件)")
         Console.WriteLine("输入 'exit' 退出程序")
 

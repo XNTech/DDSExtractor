@@ -1,27 +1,79 @@
 Imports System
 Imports System.IO
 Imports System.Collections.Generic
+Imports System.Diagnostics
 
 Module DdsExtractor
     ' DDS 文件头标识
     Private ReadOnly DDS_HEADER As Byte() = {&H44, &H44, &H53, &H20} ' "DDS "
     Private ReadOnly POF_MARKER As String = "POF"
+    Public Const Version As String = "v1.1.2"
+    Dim currentPath As String = AppDomain.CurrentDomain.BaseDirectory
+    Dim targetExePath As String = Path.Combine(currentPath, "DDSPatcher.exe")
 
     Sub Main()
-        Console.WriteLine("DDS 文件提取工具 by ChilorXN.")
+        Console.ForegroundColor = ConsoleColor.DarkCyan
+        Console.WriteLine($"DDS 文件提取工具 {Version} by ChilorXN.")
+        Console.ForegroundColor = ConsoleColor.DarkYellow
         Console.WriteLine("请拖放要处理的 .afb 或 .svo 文件到窗口，或输入文件路径(支持多个文件)")
+        Console.ForegroundColor = ConsoleColor.White
+        Console.WriteLine("输入 'Patcher' 启动同目录下的DDS修补工具")
         Console.WriteLine("输入 'exit' 退出程序")
 
         ' 持续处理循环
         While True
             Console.WriteLine()
+            Console.ForegroundColor = ConsoleColor.Blue
+            Console.Write("[Extractor]")
+            Console.ForegroundColor = ConsoleColor.White
             Console.Write("> ")
             Dim input As String = Console.ReadLine()
 
-            ' 检查退出命令
-            If input.Trim().ToLower() = "exit" Then
-                Exit While
-            End If
+            ' 检查特殊命令
+            Select Case input.Trim().ToLower()
+                Case "patcher"
+                    Console.WriteLine($"当前路径：{currentPath}")
+                    If File.Exists(targetExePath) Then
+                        Console.ForegroundColor = ConsoleColor.Green
+                        Console.WriteLine("正在启动...")
+                        Console.ForegroundColor = ConsoleColor.White
+                        Try
+                            ' 使用Process启动程序（不等待退出）
+                            Dim processInfo As New ProcessStartInfo() With {
+                                .FileName = targetExePath,
+                                .UseShellExecute = True  ' 使用Shell执行可以避免阻塞
+                            }
+
+                            Process.Start(processInfo)
+                            Console.WriteLine("已尝试启动DDSPatcher")
+                        Catch ex As Exception
+                            Console.ForegroundColor = ConsoleColor.Red
+                            Console.WriteLine($"启动DDS修补工具时出错：{ex.Message}")
+                            Console.ForegroundColor = ConsoleColor.White
+                        End Try
+                    Else
+                        Console.ForegroundColor = ConsoleColor.Red
+                        Console.WriteLine("错误：在当前目录下未找到DDSPatcher.exe，请确认您是否已经将其放入DDSExtractor所在的文件夹内")
+                        Console.ForegroundColor = ConsoleColor.White
+                    End If
+                    Continue While
+                Case "clear"
+                    Console.Clear()
+                    Continue While
+                Case "help", "about", "version"
+                    Console.ForegroundColor = ConsoleColor.DarkCyan
+                    Console.WriteLine($"DDS 文件提取工具 {Version} by ChilorXN.")
+                    Console.ForegroundColor = ConsoleColor.DarkYellow
+                    Console.WriteLine("请拖放要处理的 .afb 或 .svo 文件到窗口，或输入文件路径(支持多个文件)")
+                    Console.ForegroundColor = ConsoleColor.White
+                    Console.WriteLine("输入 'Patcher' 启动同目录下的DDS修补工具")
+                    Console.WriteLine("输入 'clear' 清空屏幕")
+                    Console.WriteLine("输入 'help' 再次查看帮助")
+                    Console.WriteLine("输入 'exit' 退出程序")
+                    Continue While
+                Case "exit"
+                    Exit While
+            End Select
 
             ' 处理输入的文件
             ProcessInputFiles(input)
@@ -70,7 +122,9 @@ Module DdsExtractor
                 Try
                     ProcessFile(filePath)
                 Catch ex As Exception
+                    Console.ForegroundColor = ConsoleColor.Red
                     Console.WriteLine($"处理文件 {filePath} 时出错: {ex.Message}")
+                    Console.ForegroundColor = ConsoleColor.White
                 End Try
             End If
         Next
@@ -78,13 +132,17 @@ Module DdsExtractor
 
     Private Sub ProcessFile(filePath As String)
         If Not File.Exists(filePath) Then
+            Console.ForegroundColor = ConsoleColor.Red
             Console.WriteLine($"文件不存在: {filePath}")
+            Console.ForegroundColor = ConsoleColor.White
             Return
         End If
 
         Dim extension As String = Path.GetExtension(filePath).ToLower()
         If extension <> ".afb" AndAlso extension <> ".svo" Then
+            Console.ForegroundColor = ConsoleColor.Red
             Console.WriteLine($"不支持的文件类型: {filePath} (仅支持 .afb 和 .svo)")
+            Console.ForegroundColor = ConsoleColor.White
             Return
         End If
 
@@ -104,7 +162,9 @@ Module DdsExtractor
         For i As Integer = 0 To ddsList.Count - 1
             Dim outputPath As String = Path.Combine(outputDir, $"{baseName}_{i + 1}.dds")
             File.WriteAllBytes(outputPath, ddsList(i))
+            Console.ForegroundColor = ConsoleColor.Green
             Console.WriteLine($"已保存: {outputPath}")
+            Console.ForegroundColor = ConsoleColor.White
         Next
     End Sub
 

@@ -71,7 +71,7 @@ Module DdsExtractor
                     Console.WriteLine("输入 'help' 再次查看帮助")
                     Console.WriteLine("输入 'exit' 退出程序")
                     Continue While
-                Case "exit"
+                Case "exit", "quit"
                     Exit While
             End Select
 

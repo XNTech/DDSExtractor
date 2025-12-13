@@ -7,15 +7,17 @@ Module DdsExtractor
     ' DDS 文件头标识
     Private ReadOnly DDS_HEADER As Byte() = {&H44, &H44, &H53, &H20} ' "DDS "
     Private ReadOnly POF_MARKER As String = "POF"
-    Public Const Version As String = "v1.1.2"
+    Public Const Version As String = "v1.2.0"
     Dim currentPath As String = AppDomain.CurrentDomain.BaseDirectory
     Dim targetExePath As String = Path.Combine(currentPath, "DDSPatcher.exe")
+    Dim FolderMode As Boolean = False
 
     Sub Main()
         Console.ForegroundColor = ConsoleColor.DarkCyan
         Console.WriteLine($"DDS 文件提取工具 {Version} by ChilorXN.")
         Console.ForegroundColor = ConsoleColor.DarkYellow
         Console.WriteLine("请拖放要处理的 .afb 或 .svo 文件到窗口，或输入文件路径(支持多个文件)")
+        Console.WriteLine("或使用SwitchMode命令切换至文件夹模式后拖放/输入文件夹路径")
         Console.ForegroundColor = ConsoleColor.White
         Console.WriteLine("输入 'Patcher' 启动同目录下的DDS修补工具")
         Console.WriteLine("输入 'exit' 退出程序")
@@ -26,7 +28,11 @@ Module DdsExtractor
             Console.ForegroundColor = ConsoleColor.Blue
             Console.Write("[Extractor]")
             Console.ForegroundColor = ConsoleColor.White
-            Console.Write("> ")
+            If FolderMode = True Then
+                Console.Write("(FolderMode)> ")
+            Else
+                Console.Write("> ")
+            End If
             Dim input As String = Console.ReadLine()
 
             ' 检查特殊命令
@@ -57,6 +63,19 @@ Module DdsExtractor
                         Console.ForegroundColor = ConsoleColor.White
                     End If
                     Continue While
+                Case "switchmode", "switch"
+                    If FolderMode = False Then
+                        FolderMode = True
+                        Console.ForegroundColor = ConsoleColor.Green
+                        Console.WriteLine("已切换至文件夹模式，将自动处理文件夹内的所有afb/svo文件")
+                        Console.ForegroundColor = ConsoleColor.White
+                    Else
+                        FolderMode = False
+                        Console.ForegroundColor = ConsoleColor.Green
+                        Console.WriteLine("已切换至正常模式")
+                        Console.ForegroundColor = ConsoleColor.White
+                    End If
+                    Continue While
                 Case "clear"
                     Console.Clear()
                     Continue While
@@ -66,6 +85,7 @@ Module DdsExtractor
                     Console.ForegroundColor = ConsoleColor.DarkYellow
                     Console.WriteLine("请拖放要处理的 .afb 或 .svo 文件到窗口，或输入文件路径(支持多个文件)")
                     Console.ForegroundColor = ConsoleColor.White
+                    Console.WriteLine("输入 'SwitchMode' 切换工作模式")
                     Console.WriteLine("输入 'Patcher' 启动同目录下的DDS修补工具")
                     Console.WriteLine("输入 'clear' 清空屏幕")
                     Console.WriteLine("输入 'help' 再次查看帮助")

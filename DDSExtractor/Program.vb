@@ -164,7 +164,7 @@ Module DdsExtractor
             Return
         End If
 
-        Console.ForegroundColor = ConsoleColor.Cyan
+        Console.ForegroundColor = ConsoleColor.DarkCyan
         Console.WriteLine($"正在扫描文件夹: {folderPath}")
         Console.ForegroundColor = ConsoleColor.White
 

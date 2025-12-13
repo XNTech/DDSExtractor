@@ -136,11 +136,17 @@ Module DdsExtractor
             filePaths.Add(currentPath.ToString())
         End If
 
-        ' 处理每个文件
+        ' 处理每个文件或文件夹
         For Each filePath In filePaths
             If Not String.IsNullOrWhiteSpace(filePath) Then
                 Try
-                    ProcessFile(filePath)
+                    If FolderMode Then
+                        ' 文件夹模式：处理文件夹内的所有afb/svo文件
+                        ProcessFolder(filePath)
+                    Else
+                        ' 正常模式：处理单个文件
+                        ProcessFile(filePath)
+                    End If
                 Catch ex As Exception
                     Console.ForegroundColor = ConsoleColor.Red
                     Console.WriteLine($"处理文件 {filePath} 时出错: {ex.Message}")
@@ -149,6 +155,52 @@ Module DdsExtractor
             End If
         Next
     End Sub
+
+    Private Sub ProcessFolder(folderPath As String)
+        If Not Directory.Exists(folderPath) Then
+            Console.ForegroundColor = ConsoleColor.Red
+            Console.WriteLine($"文件夹不存在: {folderPath}")
+            Console.ForegroundColor = ConsoleColor.White
+            Return
+        End If
+
+        Console.ForegroundColor = ConsoleColor.Cyan
+        Console.WriteLine($"正在扫描文件夹: {folderPath}")
+        Console.ForegroundColor = ConsoleColor.White
+
+        ' 获取所有afb和svo文件
+        Dim files As String() = Directory.GetFiles(folderPath, "*.afb", SearchOption.TopDirectoryOnly)
+        files = files.Concat(Directory.GetFiles(folderPath, "*.svo", SearchOption.TopDirectoryOnly)).ToArray()
+
+        If files.Length = 0 Then
+            Console.ForegroundColor = ConsoleColor.Yellow
+            Console.WriteLine($"文件夹中没有找到afb或svo文件")
+            Console.ForegroundColor = ConsoleColor.White
+            Return
+        End If
+
+        Console.WriteLine($"找到 {files.Length} 个文件需要处理")
+
+        Dim successCount As Integer = 0
+        Dim failCount As Integer = 0
+
+        For Each filePath In files
+            Try
+                ProcessFile(filePath)
+                successCount += 1
+            Catch ex As Exception
+                Console.ForegroundColor = ConsoleColor.Red
+                Console.WriteLine($"处理文件 {Path.GetFileName(filePath)} 时出错: {ex.Message}")
+                Console.ForegroundColor = ConsoleColor.White
+                failCount += 1
+            End Try
+        Next
+
+        Console.ForegroundColor = ConsoleColor.Green
+        Console.WriteLine($"文件夹处理完成: {successCount} 个成功, {failCount} 个失败")
+        Console.ForegroundColor = ConsoleColor.White
+    End Sub
+
 
     Private Sub ProcessFile(filePath As String)
         If Not File.Exists(filePath) Then

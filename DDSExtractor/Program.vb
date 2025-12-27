@@ -11,6 +11,7 @@ Module DdsExtractor
     Dim currentPath As String = AppDomain.CurrentDomain.BaseDirectory
     Dim targetExePath As String = Path.Combine(currentPath, "DDSPatcher.exe")
     Dim FolderMode As Boolean = False
+    Dim OutputPathSetting As String = ""
 
     Sub Main()
         Console.ForegroundColor = ConsoleColor.DarkCyan
@@ -74,6 +75,32 @@ Module DdsExtractor
                         Console.ForegroundColor = ConsoleColor.Green
                         Console.WriteLine("已切换至正常模式")
                         Console.ForegroundColor = ConsoleColor.White
+                    End If
+                    Continue While
+                Case "setpath"
+                    Console.ForegroundColor = ConsoleColor.DarkCyan
+                    Console.WriteLine("请设置输出路径")
+                    Console.ForegroundColor = ConsoleColor.Blue
+                    Console.Write("[Extractor]")
+                    Console.ForegroundColor = ConsoleColor.White
+                    Console.Write("(SetPath)> ")
+                    Dim PathSetting As String = Console.ReadLine
+                    If String.IsNullOrWhiteSpace(PathSetting) Then
+                        Console.ForegroundColor = ConsoleColor.Red
+                        Console.WriteLine("请输入路径！")
+                        Console.ForegroundColor = ConsoleColor.White
+                    Else
+                        If Not Directory.Exists(PathSetting) Then
+                            Console.ForegroundColor = ConsoleColor.Red
+                            Console.WriteLine("路径不存在！")
+                            Console.ForegroundColor = ConsoleColor.White
+                        Else
+                            OutputPathSetting = PathSetting
+                            PathSetting = ""
+                            Console.ForegroundColor = ConsoleColor.Green
+                            Console.WriteLine("设置成功！")
+                            Console.ForegroundColor = ConsoleColor.White
+                        End If
                     End If
                     Continue While
                 Case "clear"
@@ -227,7 +254,21 @@ Module DdsExtractor
 
         ' 保存提取的 DDS 文件
         Dim baseName As String = Path.GetFileNameWithoutExtension(filePath)
-        Dim outputDir As String = Path.Combine(Path.GetDirectoryName(filePath), $"{baseName}_extracted")
+        Dim outputDir As String = ""
+
+        '检查输出路径覆写设置
+        If String.IsNullOrWhiteSpace(OutputPathSetting) Then
+            outputDir = Path.Combine(Path.GetDirectoryName(filePath), $"{baseName}_extracted")
+        Else
+            If Not Directory.Exists(OutputPathSetting) Then
+                Console.ForegroundColor = ConsoleColor.Red
+                Console.WriteLine("输出路径无效！将使用默认路径保存")
+                Console.ForegroundColor = ConsoleColor.White
+                outputDir = Path.Combine(Path.GetDirectoryName(filePath), $"{baseName}_extracted")
+            Else
+                outputDir = Path.Combine(OutputPathSetting, $"{baseName}_extracted")
+            End If
+        End If
 
         Directory.CreateDirectory(outputDir)
 

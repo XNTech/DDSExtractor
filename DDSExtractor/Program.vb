@@ -11,6 +11,7 @@ Module DdsExtractor
     Dim currentPath As String = AppDomain.CurrentDomain.BaseDirectory
     Dim targetExePath As String = Path.Combine(currentPath, "DDSPatcher.exe")
     Dim FolderMode As Boolean = False
+    Dim NoFolder As Boolean = False
     Dim OutputPathSetting As String = ""
 
     Sub Main()
@@ -101,6 +102,25 @@ Module DdsExtractor
                             Console.WriteLine("设置成功！")
                             Console.ForegroundColor = ConsoleColor.White
                         End If
+                    End If
+                    Continue While
+                Case "outputmode"
+                    If NoFolder = False Then
+                        If Not String.IsNullOrWhiteSpace(OutputPathSetting) And Directory.Exists(OutputPathSetting) Then
+                            Console.ForegroundColor = ConsoleColor.Green
+                            Console.WriteLine("输出模式设置成功，将直接输出文件，不再为每个文件创建独立的文件夹")
+                            Console.ForegroundColor = ConsoleColor.White
+                            NoFolder = True
+                        Else
+                            Console.ForegroundColor = ConsoleColor.Red
+                            Console.WriteLine("请先设置有效的输出目录！")
+                            Console.ForegroundColor = ConsoleColor.White
+                        End If
+                    Else
+                        Console.ForegroundColor = ConsoleColor.Green
+                        Console.WriteLine("输出模式设置成功，将会为每个afb/svo文件创建独立的文件夹")
+                        Console.ForegroundColor = ConsoleColor.White
+                        NoFolder = False
                     End If
                     Continue While
                 Case "clear"
@@ -260,17 +280,23 @@ Module DdsExtractor
         If String.IsNullOrWhiteSpace(OutputPathSetting) Then
             outputDir = Path.Combine(Path.GetDirectoryName(filePath), $"{baseName}_extracted")
         Else
-            If Not Directory.Exists(OutputPathSetting) Then
+            If Not Directory.Exists(OutputPathSetting) Then '防止用户点炒饭
                 Console.ForegroundColor = ConsoleColor.Red
                 Console.WriteLine("输出路径无效！将使用默认路径保存")
                 Console.ForegroundColor = ConsoleColor.White
                 outputDir = Path.Combine(Path.GetDirectoryName(filePath), $"{baseName}_extracted")
             Else
-                outputDir = Path.Combine(OutputPathSetting, $"{baseName}_extracted")
+                If NoFolder = True Then
+                    outputDir = OutputPathSetting
+                Else
+                    outputDir = Path.Combine(OutputPathSetting, $"{baseName}_extracted")
+                End If
             End If
         End If
 
-        Directory.CreateDirectory(outputDir)
+        If NoFolder = False Then
+            Directory.CreateDirectory(outputDir)
+        End If
 
         For i As Integer = 0 To ddsList.Count - 1
             Dim outputPath As String = Path.Combine(outputDir, $"{baseName}_{i + 1}.dds")

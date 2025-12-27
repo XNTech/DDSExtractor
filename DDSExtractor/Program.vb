@@ -2,12 +2,13 @@ Imports System
 Imports System.IO
 Imports System.Collections.Generic
 Imports System.Diagnostics
+Imports System.Threading
 
 Module DdsExtractor
     ' DDS 文件头标识
     Private ReadOnly DDS_HEADER As Byte() = {&H44, &H44, &H53, &H20} ' "DDS "
     Private ReadOnly POF_MARKER As String = "POF"
-    Public Const Version As String = "v1.2.0"
+    Public Const Version As String = "v1.2.2"
     Dim currentPath As String = AppDomain.CurrentDomain.BaseDirectory
     Dim targetExePath As String = Path.Combine(currentPath, "DDSPatcher.exe")
     Dim FolderMode As Boolean = False
@@ -22,6 +23,7 @@ Module DdsExtractor
         Console.WriteLine("或使用SwitchMode命令切换至文件夹模式后拖放/输入文件夹路径")
         Console.ForegroundColor = ConsoleColor.White
         Console.WriteLine("输入 'Patcher' 启动同目录下的DDS修补工具")
+        Console.WriteLine("输入 'help' 查看更多帮助")
         Console.WriteLine("输入 'exit' 退出程序")
 
         ' 持续处理循环
@@ -126,6 +128,16 @@ Module DdsExtractor
                 Case "clear"
                     Console.Clear()
                     Continue While
+                Case "reset"
+                    FolderMode = False
+                    NoFolder = False
+                    OutputPathSetting = ""
+                    Console.ForegroundColor = ConsoleColor.DarkCyan
+                    Console.WriteLine("设置已重置！")
+                    Console.ForegroundColor = ConsoleColor.White
+                    Thread.Sleep(3000)
+                    Console.Clear()
+                    Continue While
                 Case "help", "about", "version"
                     Console.ForegroundColor = ConsoleColor.DarkCyan
                     Console.WriteLine($"DDS 文件提取工具 {Version} by ChilorXN.")
@@ -133,8 +145,11 @@ Module DdsExtractor
                     Console.WriteLine("请拖放要处理的 .afb 或 .svo 文件到窗口，或输入文件路径(支持多个文件)")
                     Console.ForegroundColor = ConsoleColor.White
                     Console.WriteLine("输入 'SwitchMode' 切换工作模式")
+                    Console.WriteLine("输入 'OutputMode' 切换输出模式")
+                    Console.WriteLine("输入 'SetPath' 设置输出路径")
                     Console.WriteLine("输入 'Patcher' 启动同目录下的DDS修补工具")
                     Console.WriteLine("输入 'clear' 清空屏幕")
+                    Console.WriteLine("输入 'reset' 重置所有设置并清空屏幕")
                     Console.WriteLine("输入 'help' 再次查看帮助")
                     Console.WriteLine("输入 'exit' 退出程序")
                     Continue While

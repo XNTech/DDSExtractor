@@ -109,20 +109,20 @@ Module DdsExtractor
                 Case "outputmode"
                     If NoFolder = False Then
                         If Not String.IsNullOrWhiteSpace(OutputPathSetting) And Directory.Exists(OutputPathSetting) Then
+                            NoFolder = True
                             Console.ForegroundColor = ConsoleColor.Green
                             Console.WriteLine("输出模式设置成功，将直接输出文件，不再为每个文件创建独立的文件夹")
                             Console.ForegroundColor = ConsoleColor.White
-                            NoFolder = True
                         Else
                             Console.ForegroundColor = ConsoleColor.Red
                             Console.WriteLine("请先设置有效的输出目录！")
                             Console.ForegroundColor = ConsoleColor.White
                         End If
                     Else
+                        NoFolder = False
                         Console.ForegroundColor = ConsoleColor.Green
                         Console.WriteLine("输出模式设置成功，将会为每个afb/svo文件创建独立的文件夹")
                         Console.ForegroundColor = ConsoleColor.White
-                        NoFolder = False
                     End If
                     Continue While
                 Case "clear"

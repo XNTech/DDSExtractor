@@ -231,6 +231,7 @@ Module DdsExtractor
         Console.ForegroundColor = ConsoleColor.White
 
         ' 获取所有afb和svo文件
+        ' 如果你需要同时获取子目录中的文件，请将'SearchOption.TopDirectoryOnly'改为'SearchOption.AllDirectories'
         Dim files As String() = Directory.GetFiles(folderPath, "*.afb", SearchOption.TopDirectoryOnly)
         files = files.Concat(Directory.GetFiles(folderPath, "*.svo", SearchOption.TopDirectoryOnly)).ToArray()
 

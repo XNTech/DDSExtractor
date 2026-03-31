@@ -8,11 +8,12 @@ Module DdsExtractor
     ' DDS 文件头标识
     Private ReadOnly DDS_HEADER As Byte() = {&H44, &H44, &H53, &H20} ' "DDS "
     Private ReadOnly POF_MARKER As String = "POF"
-    Public Const Version As String = "v1.2.2"
+    Public Const Version As String = "v1.2.6"
     Dim currentPath As String = AppDomain.CurrentDomain.BaseDirectory
     Dim targetExePath As String = Path.Combine(currentPath, "DDSPatcher.exe")
     Dim FolderMode As Boolean = False
     Dim NoFolder As Boolean = False
+    Dim Recursion As Boolean = False
     Dim OutputPathSetting As String = ""
 
     Sub Main()
@@ -33,7 +34,15 @@ Module DdsExtractor
             Console.Write("[Extractor]")
             Console.ForegroundColor = ConsoleColor.White
             If FolderMode = True Then
-                Console.Write("(FolderMode)> ")
+                Console.Write("(FolderMode)")
+                If Recursion = True Then
+                    Console.ForegroundColor = ConsoleColor.Green
+                    Console.Write("(R)")
+                    Console.ForegroundColor = ConsoleColor.White
+                    Console.Write("> ")
+                Else
+                    Console.Write("> ")
+                End If
             Else
                 Console.Write("> ")
             End If
@@ -77,6 +86,29 @@ Module DdsExtractor
                         FolderMode = False
                         Console.ForegroundColor = ConsoleColor.Green
                         Console.WriteLine("已切换至正常模式")
+                        Console.ForegroundColor = ConsoleColor.White
+                    End If
+                    Continue While
+                Case "scanmode"
+                    If FolderMode = True Then
+                        If Recursion = False Then
+                            If String.IsNullOrWhiteSpace(OutputPathSetting) Or Not Directory.Exists(OutputPathSetting) Then
+                                Console.ForegroundColor = ConsoleColor.DarkYellow
+                                Console.WriteLine("警告：该功能尚未经过充分测试，为避免破坏原有的目录结构，建议先使用 'SetPath' 命令设置有效的输出路径")
+                            End If
+                            Recursion = True
+                            Console.ForegroundColor = ConsoleColor.Green
+                            Console.WriteLine("已启用递归扫描，将自动处理子目录内的文件")
+                            Console.ForegroundColor = ConsoleColor.White
+                        Else
+                            Recursion = False
+                            Console.ForegroundColor = ConsoleColor.Green
+                            Console.WriteLine("已停用递归扫描，将仅处理当前目录内的文件")
+                            Console.ForegroundColor = ConsoleColor.White
+                        End If
+                    Else
+                        Console.ForegroundColor = ConsoleColor.Red
+                        Console.WriteLine("请在文件夹模式下设置！")
                         Console.ForegroundColor = ConsoleColor.White
                     End If
                     Continue While
@@ -130,6 +162,7 @@ Module DdsExtractor
                     Continue While
                 Case "reset"
                     FolderMode = False
+                    Recursion = False
                     NoFolder = False
                     OutputPathSetting = ""
                     Console.ForegroundColor = ConsoleColor.DarkCyan
@@ -147,6 +180,7 @@ Module DdsExtractor
                     Console.WriteLine("输入 'SwitchMode' 切换工作模式")
                     Console.WriteLine("输入 'OutputMode' 切换输出模式")
                     Console.WriteLine("输入 'SetPath' 设置输出路径")
+                    Console.WriteLine("输入 'ScanMode' 设置文件夹模式下是否递归扫描")
                     Console.WriteLine("输入 'Patcher' 启动同目录下的DDS修补工具")
                     Console.WriteLine("输入 'clear' 清空屏幕")
                     Console.WriteLine("输入 'reset' 重置所有设置并清空屏幕")
@@ -221,7 +255,7 @@ Module DdsExtractor
     Private Sub ProcessFolder(folderPath As String)
         If Not Directory.Exists(folderPath) Then
             Console.ForegroundColor = ConsoleColor.Red
-            Console.WriteLine($"文件夹不存在: {folderPath}")
+            Console.WriteLine($"文件夹或命令不存在: {folderPath}")
             Console.ForegroundColor = ConsoleColor.White
             Return
         End If
@@ -232,11 +266,17 @@ Module DdsExtractor
 
         ' 获取所有afb和svo文件
         ' 如果你需要同时获取子目录中的文件，请将'SearchOption.TopDirectoryOnly'改为'SearchOption.AllDirectories'
-        Dim files As String() = Directory.GetFiles(folderPath, "*.afb", SearchOption.TopDirectoryOnly)
-        files = files.Concat(Directory.GetFiles(folderPath, "*.svo", SearchOption.TopDirectoryOnly)).ToArray()
+        Dim files As String()
+        If Recursion = True Then
+            files = Directory.GetFiles(folderPath, "*.afb", SearchOption.AllDirectories)
+            files = files.Concat(Directory.GetFiles(folderPath, "*.svo", SearchOption.AllDirectories)).ToArray()
+        Else
+            files = Directory.GetFiles(folderPath, "*.afb", SearchOption.TopDirectoryOnly)
+            files = files.Concat(Directory.GetFiles(folderPath, "*.svo", SearchOption.TopDirectoryOnly)).ToArray()
+        End If
 
         If files.Length = 0 Then
-            Console.ForegroundColor = ConsoleColor.Yellow
+            Console.ForegroundColor = ConsoleColor.DarkYellow
             Console.WriteLine($"文件夹中没有找到afb或svo文件")
             Console.ForegroundColor = ConsoleColor.White
             Return
@@ -268,7 +308,7 @@ Module DdsExtractor
     Private Sub ProcessFile(filePath As String)
         If Not File.Exists(filePath) Then
             Console.ForegroundColor = ConsoleColor.Red
-            Console.WriteLine($"文件不存在: {filePath}")
+            Console.WriteLine($"文件或命令不存在: {filePath}")
             Console.ForegroundColor = ConsoleColor.White
             Return
         End If

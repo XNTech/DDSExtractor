@@ -1,3 +1,5 @@
+<img width="96" height="128" alt="Extract" src="https://github.com/user-attachments/assets/4bdbba87-306f-4860-8aae-be2858e21182" />
+
 # DDSExtractor
 Extract DDS Image From .afb or .svo file(s)
 
